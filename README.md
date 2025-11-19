@@ -20,6 +20,8 @@ Asegúrate de tener instaladas las siguientes herramientas en tu sistema operati
 
 ---
 
+## **Lo siguiente es solo para desarrolladores**
+
 ## ⚙️ 2. Instalación del Entorno
 
 Abre tu terminal, clona el repositorio e inicia la configuración en el directorio principal:
