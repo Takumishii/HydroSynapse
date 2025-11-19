@@ -1,0 +1,57 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+
+<script>
+    let chartInstance = null;
+    
+    // Función que llama a la API de Python (Flask)
+    async function cargarGrafico() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/datos');
+            const data = await response.json();
+            
+            // Usaremos los datos de la API para dibujar
+            const chartData = {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr'], // Idealmente, estos vienen de 'data'
+                datasets: [{
+                    label: data.mensaje,
+                    data: [data.valor, data.valor + 10, data.valor + 5, data.valor + 20],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            };
+
+            dibujarGrafico(chartData);
+
+        } catch (error) {
+            console.error("No se pudo conectar con el Backend de Flask:", error);
+            document.getElementById('estado').innerText = "ERROR: El servidor Python no está activo.";
+        }
+    }
+
+    function dibujarGrafico(chartData) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy(); // Limpiar si ya existe
+        
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: { responsive: true }
+        });
+        document.getElementById('estado').innerText = "Gráfico cargado correctamente.";
+    }
+
+    // Cargar los datos al iniciar la aplicación
+    cargarGrafico();
+</script>
+
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Dashboard de Ventas</h1>
+    <p id="estado">Verificando conexión con el backend...</p>
+    <div style="width: 700px; height: 400px;">
+        <canvas id="myChart"></canvas>
+    </div>
+    <button onclick="cargarGrafico()">Recargar Datos</button>
+</body>
+</html>
