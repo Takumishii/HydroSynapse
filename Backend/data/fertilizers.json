@@ -1,0 +1,7 @@
+{
+  "NitratoCalcio": { "N": 15.5, "P": 0, "K": 0, "Ca": 19, "Mg": 0 },
+  "NitratoPotasio": { "N": 13, "P": 0, "K": 46, "Ca": 0, "Mg": 0 },
+  "FosfatoMonopot": { "N": 0, "P": 22.7, "K": 28, "Ca": 0, "Mg": 0 },
+  "SulfatoMagnesio": { "N": 0, "P": 0, "K": 0, "Ca": 0, "Mg": 9.8 },
+  "NitratoAmonio": { "N": 34, "P": 0, "K": 0, "Ca": 0, "Mg": 0 }
+}

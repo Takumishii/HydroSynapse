@@ -1,57 +1,408 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-
-<script>
-    let chartInstance = null;
-    
-    // Función que llama a la API de Python (Flask)
-    async function cargarGrafico() {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/datos');
-            const data = await response.json();
-            
-            // Usaremos los datos de la API para dibujar
-            const chartData = {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr'], // Idealmente, estos vienen de 'data'
-                datasets: [{
-                    label: data.mensaje,
-                    data: [data.valor, data.valor + 10, data.valor + 5, data.valor + 20],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            };
-
-            dibujarGrafico(chartData);
-
-        } catch (error) {
-            console.error("No se pudo conectar con el Backend de Flask:", error);
-            document.getElementById('estado').innerText = "ERROR: El servidor Python no está activo.";
-        }
-    }
-
-    function dibujarGrafico(chartData) {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy(); // Limpiar si ya existe
-        
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: { responsive: true }
-        });
-        document.getElementById('estado').innerText = "Gráfico cargado correctamente.";
-    }
-
-    // Cargar los datos al iniciar la aplicación
-    cargarGrafico();
-</script>
-
 <!DOCTYPE html>
-<html>
-<body>
-    <h1>Dashboard de Ventas</h1>
-    <p id="estado">Verificando conexión con el backend...</p>
-    <div style="width: 700px; height: 400px;">
-        <canvas id="myChart"></canvas>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydroponic OS | Terminal Híbrido</title>
+    <!-- Carga de Three.js y Chart.js para la simulación y gráficos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <!-- Carga de Tailwind CSS para el estilo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos generales y la temática retro-futurista */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        :root {
+            --neon-green: #39ff14;
+            --neon-blue: #00ffff;
+            --neon-pink: #ff00ff;
+            --bg-dark: #050c18;
+            --border-color: rgba(57, 255, 20, 0.4);
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: var(--bg-dark);
+            color: var(--neon-green);
+            overflow: hidden; /* Evita barras de desplazamiento en el cuerpo */
+            height: 100vh;
+        }
+
+        /* Estilos del escritorio y contenedor de módulos */
+        #desktopContainer {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 40px); /* Resta la altura de la barra de comandos */
+        }
+        
+        /* Estilo base de todas las ventanas modulares (flotantes) */
+        .module-window {
+            position: absolute;
+            background-color: rgba(5, 12, 24, 0.9); /* Fondo semi-transparente oscuro */
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transition: box-shadow 0.1s;
+            resize: both; /* Permite redimensionar */
+            overflow: auto;
+            min-width: 200px;
+            min-height: 150px;
+            z-index: 50;
+        }
+        
+        /* Estilo de la ventana enfocada */
+        .module-window.focused {
+            z-index: 60; 
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        /* Encabezado de la ventana (arrastrable) */
+        .window-header {
+            cursor: move;
+            background-color: rgba(0, 255, 255, 0.2); /* Neon Blue */
+            color: white;
+            padding: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            border-bottom: 1px solid var(--neon-blue);
+        }
+
+        /* Botón de cerrar */
+        .close-btn {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--neon-pink);
+            font-size: 1.2em;
+            line-height: 1;
+        }
+
+        /* Estilo del visor 3D (Fijo) */
+        #module-sim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 70%;
+            height: 70%;
+            background-color: var(--bg-dark);
+            border-right: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            z-index: 40; /* Fondo detrás de los flotantes */
+        }
+
+        /* Estilo de la consola (Fijo) */
+        #module-console {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30%;
+            height: 30%;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-top: 2px solid var(--border-color);
+            border-left: 2px solid var(--border-color);
+            z-index: 100; /* Siempre al frente */
+        }
+        
+        /* Contenido de la consola */
+        #consoleLog {
+            height: 100%;
+            overflow-y: scroll;
+            padding: 5px;
+            font-size: 0.8em;
+            color: var(--neon-green);
+        }
+        
+        /* Scrollbar estilo retro */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border: 1px solid var(--neon-green);
+        }
+        
+        /* Inspector Panel (Barra de comandos horizontal) */
+        #moduleInspector {
+            display: flex;
+            background-color: var(--neon-blue);
+            padding: 5px 10px;
+            height: 40px;
+        }
+        .inspector-item {
+            cursor: pointer;
+            padding: 2px 8px;
+            margin-right: 5px;
+            background-color: var(--bg-dark);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            transition: background-color 0.1s, color 0.1s;
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
+        /* Item activo/abierto */
+        .inspector-item.active {
+            background-color: var(--neon-green);
+            color: var(--bg-dark);
+            border-color: var(--neon-pink);
+        }
+        /* Alerta de inventario bajo */
+        .inspector-item.alert-low-stock {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            animation: pulse-pink 1s infinite alternate;
+        }
+        .inspector-item.alert-low-stock:hover {
+            background-color: var(--neon-pink);
+            color: var(--bg-dark);
+        }
+
+        @keyframes pulse-pink {
+            from { box-shadow: 0 0 5px var(--neon-pink); }
+            to { box-shadow: 0 0 15px var(--neon-pink); }
+        }
+
+        /* Estilo para los inputs y botones */
+        input[type="number"], input[type="text"], input[type="date"], select, button {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-green);
+            padding: 4px;
+            margin: 2px 0;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            border-radius: 0; /* Estilo retro */
+        }
+        button:hover {
+            background-color: var(--neon-pink);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* Estado inferior */
+        #statusBar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-top: 2px solid var(--neon-green);
+            z-index: 200;
+        }
+
+        /* Gráfico */
+        #npkChart {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-neon-green">
+
+    <!-- BARRA DE COMANDOS (Inspector Panel) -->
+    <div id="moduleInspector" class="flex items-center overflow-x-auto">
+        <span class="mr-4 text-white font-bold text-lg whitespace-nowrap">HYDROPONIC OS</span>
+        <!-- Items de módulo inyectados por JS -->
     </div>
-    <button onclick="cargarGrafico()">Recargar Datos</button>
+
+    <!-- ESCRITORIO / CONTENEDOR PRINCIPAL -->
+    <div id="desktopContainer">
+
+        <!-- MÓDULO 1: CÁLCULO DE RECETA -->
+        <div id="module-calc" class="module-window w-96 h-auto" style="top: 50px; left: 750px; z-index: 51;">
+            <div class="window-header">
+                <span>[ CALCULO DE RECETA ]</span>
+                <span class="close-btn" onclick="toggleModule('module-calc', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-3">
+                <label class="block">Volumen del Tanque (L):</label>
+                <input type="number" id="volumenTanque" value="100" class="w-full">
+                
+                <label class="block">Perfil de Nutrientes:</label>
+                <select id="perfilPlanta" class="w-full"></select>
+                
+                <button onclick="calcularDosis()" class="w-full mt-4 p-2 bg-neon-blue text-black font-bold">CALCULAR DOSIS</button>
+            </div>
+        </div>
+        
+        <!-- MÓDULO 2: DATOS DE DOSIFICACIÓN -->
+        <div id="module-results" class="module-window w-80 h-auto" style="top: 250px; left: 750px; display: none;">
+            <div class="window-header">
+                <span>[ DATOS DE DOSIFICACIÓN ]</span>
+                <span class="close-btn" onclick="toggleModule('module-results', true)">[X]</span>
+            </div>
+            <div class="p-3">
+                <div class="mb-3 border-b border-neon-green/50 pb-1">
+                    <p>EC Estimada: <span id="val-ec" class="font-bold text-neon-blue">0.00 mS/cm</span></p>
+                    <p>pH Estimado: <span id="val-ph" class="font-bold text-neon-blue">0.00</span></p>
+                </div>
+                <h4 class="text-neon-pink mb-2">DOSIS REQUERIDAS (g):</h4>
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="border-b-2 border-neon-green">
+                            <th class="text-left">Sal</th>
+                            <th class="text-right">Gramos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaDosisBody">
+                        <!-- Filas inyectadas por JS -->
+                    </tbody>
+                </table>
+                <button onclick="enviarAProcesador()" class="w-full mt-4 p-2 bg-neon-green text-black font-bold">ENVIAR A DOSIFICADOR</button>
+            </div>
+        </div>
+
+        <!-- MÓDULO 3: ANALIZADOR QUÍMICO -->
+        <div id="module-analyze" class="module-window w-80 h-auto" style="top: 450px; left: 750px; display: none;">
+            <div class="window-header">
+                <span>[ ANALIZADOR QUÍMICO ]</span>
+                <span class="close-btn" onclick="toggleModule('module-analyze', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-3">
+                <h4 class="text-neon-pink">Muestra y Concentración:</h4>
+                <input type="text" id="chemFormula" placeholder="Fórmula (e.g., KCL)" class="w-2/3">
+                <input type="number" id="chemPpm" placeholder="PPM" class="w-1/3">
+                <button onclick="agregarSal()" class="w-full">AGREGAR SAL</button>
+                <ul id="listaSales" class="border p-2 min-h-[30px] max-h-[100px] overflow-y-auto border-neon-green/50">
+                    <!-- Lista de sales agregadas -->
+                </ul>
+                <button onclick="analizarAgua()" class="w-full mt-2 p-2 bg-neon-blue text-black font-bold">ANALIZAR MUESTRA</button>
+            </div>
+        </div>
+
+        <!-- MÓDULO 4: BALANCE NPK -->
+        <div id="module-npk-balance" class="module-window w-96 h-80" style="top: 50px; left: 1100px; display: none;">
+            <div class="window-header">
+                <span>[ BALANCE NPK ]</span>
+                <span class="close-btn" onclick="toggleModule('module-npk-balance', true)">[X]</span>
+            </div>
+            <div class="p-3 h-[calc(100%-40px)]">
+                 <canvas id="npkChart" class="h-full w-full"></canvas>
+            </div>
+        </div>
+        
+        <!-- MÓDULO 5: INVENTARIO DE SALES -->
+        <div id="module-inventory" class="module-window w-[450px] h-96" style="top: 50px; left: 100px; z-index: 52;">
+            <div class="window-header">
+                <span>[ INVENTARIO DE SALES ]</span>
+                <span class="close-btn" onclick="toggleModule('module-inventory', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-4">
+                <h4 class="text-neon-pink border-b border-neon-pink/50 pb-1">Stock Actual (Kg)</h4>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b-2 border-neon-blue">
+                            <th class="text-left">Sal</th>
+                            <th class="text-right">Stock (Kg)</th>
+                            <th class="text-right">Costo ($/Kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <!-- Filas inyectadas por JS/Firestore -->
+                    </tbody>
+                </table>
+                <p class="text-xs text-neon-blue">Stock bajo (LOW): &lt; 5.0 Kg</p>
+                <button class="w-full p-2 bg-neon-blue text-black font-bold">GENERAR ORDEN DE COMPRA</button>
+            </div>
+        </div>
+
+        <!-- MÓDULO 6: DIAGNÓSTICO DE DEFICIENCIAS -->
+        <div id="module-diagnosis" class="module-window w-80 h-72" style="top: 400px; left: 100px; z-index: 53;">
+            <div class="window-header">
+                <span>[ DIAGNÓSTICO DE DEFICIENCIAS ]</span>
+                <span class="close-btn" onclick="toggleModule('module-diagnosis', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-3">
+                <h4 class="text-neon-pink border-b border-neon-pink/50 pb-1">Síntomas Visuales</h4>
+                <label class="block">Seleccione el síntoma principal:</label>
+                <select id="symptomSelector" class="w-full">
+                    <option value="clorosis_hojas_viejas">Clorosis (amarilleamiento) en hojas viejas</option>
+                    <option value="necrosis_bordes">Necrosis o quemadura en bordes de hojas nuevas</option>
+                    <option value="hojas_curvadas">Hojas nuevas pequeñas o curvadas</option>
+                    <option value="tallos_púrpura">Tallos o envés de hojas púrpuras</option>
+                </select>
+                <button onclick="runDiagnosis()" class="w-full p-2 bg-neon-green text-black font-bold">ANALIZAR SÍNTOMAS</button>
+                <div id="diagnosisResult" class="text-sm mt-2 border p-2 border-neon-pink/50 min-h-[50px]">
+                    <!-- Resultado inyectado aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- MÓDULO 7: HISTORIAL DE DOSIFICACIÓN (NUEVO) -->
+        <div id="module-history" class="module-window w-[600px] h-96" style="top: 150px; left: 20px; display: none;">
+            <div class="window-header">
+                <span>[ HISTORIAL DE DOSIFICACIÓN ]</span>
+                <span class="close-btn" onclick="toggleModule('module-history', true)">[X]</span>
+            </div>
+            <div class="p-3">
+                <p class="text-neon-pink border-b border-neon-pink/50 pb-1 mb-2">Registros de Nutrición Aplicada</p>
+                <div class="overflow-y-auto h-[calc(100vh-270px)]">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b-2 border-neon-blue text-left">
+                                <th class="p-1">Fecha/Hora</th>
+                                <th class="p-1">Perfil</th>
+                                <th class="p-1">Vol. (L)</th>
+                                <th class="p-1">EC Final</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <!-- Filas inyectadas por JS/Firestore -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO 8: PERFILES DE NUTRIENTES EDITABLES (NUEVO) -->
+        <div id="module-profiles" class="module-window w-[350px] h-auto" style="top: 50px; left: 400px; display: none;">
+            <div class="window-header">
+                <span>[ PERFILES DE NUTRIENTES ]</span>
+                <span class="close-btn" onclick="toggleModule('module-profiles', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-3">
+                <h4 class="text-neon-pink border-b border-neon-pink/50 pb-1">Crear/Editar Receta</h4>
+                <input type="text" id="profileName" placeholder="Nombre del Perfil" class="w-full">
+                <div class="grid grid-cols-4 gap-2">
+                    <input type="number" id="profileN" placeholder="N (ppm)" value="150">
+                    <input type="number" id="profileP" placeholder="P (ppm)" value="50">
+                    <input type="number" id="profileK" placeholder="K (ppm)" value="200">
+                    <input type="number" id="profileEC" placeholder="EC (mS)" value="1.8">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                     <input type="number" id="profilepH" placeholder="pH" value="5.8">
+                     <button onclick="saveNutrientProfile()" class="w-full bg-neon-green text-black font-bold">GUARDAR PERFIL</button>
+                </div>
+
+                <h4 class="text-neon-blue border-b border-neon-blue/50 pb-1 mt-4">Perfiles Guardados</h4>
+                <ul id="profilesList" class="max-h-40 overflow-y-auto space-y-1">
+                    <!-- Lista de perfiles inyectada por JS/Firestore -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- MÓDULO FIJO A: VISUALIZACIÓN 3D -->
+        <div id="module-sim" class="flex flex-col items-center justify-center p-2">
+            <!-- El canvas 3D se inyecta aquí -->
+            <div id="simContent" class="w-full h-full"></div>
+        </div>
+
+        <!-- MÓDULO FIJO B: CONSOLA DE REGISTROS -->
+        <div id="module-console">
+            <div class="p-1 border-b border-neon-pink/50 bg-black/50">CONSOLA DE REGISTROS</div>
+            <div id="consoleLog"></div>
+        </div>
+        
+        <!-- BARRA DE ESTADO INFERIOR -->
+        <div id="statusBar" class="text-sm text-neon-green z-200">
+            <span id="statusText">STATUS: Inicializando...</span>
+        </div>
+
+    </div>
+
+    <!-- Carga el script de inicialización y lógica -->
+    <script type="module" src="renderer.js"></script>
 </body>
 </html>
