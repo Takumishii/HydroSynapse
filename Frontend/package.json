@@ -6,7 +6,9 @@
     "start": "electron ."
   },
   "dependencies": {
-    "chart.js": "^...",
+    "chart.js": "^4.0.0"
+  },
+  "devDependencies": {
     "electron": "^39.2.2"
   }
 }
