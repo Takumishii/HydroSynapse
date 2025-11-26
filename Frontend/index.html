@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydroponic OS | Terminal Híbrido</title>
-    <!-- Carga de Three.js y Chart.js para la simulación y gráficos -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-    <!-- Carga de Tailwind CSS para el estilo -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>HydroSynapse | Terminal Híbrido</title>
     
     <link rel="stylesheet" href="styles.css">
     <link href="./public/output.css" rel="stylesheet">
+    
 
 </head>
 <body class="bg-gray-900 text-neon-green">
 
     <!-- BARRA DE COMANDOS (Inspector Panel) -->
     <div id="moduleInspector" class="flex items-center overflow-x-auto">
-        <span class="mr-4 text-white font-bold text-lg whitespace-nowrap">HYDROPONIC OS</span>
+        <span class="mr-4 text-white font-bold text-lg whitespace-nowrap">HYDROSYNAPSE</span>
         <!-- Items de módulo inyectados por JS -->
     </div>
 
@@ -217,6 +212,15 @@
         </div>
 
     </div>
+
+    <script>
+        window.addEventListener('error', (e) => {
+            console.error('window error:', e.message, e.filename, e.lineno, e.error);
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('unhandledrejection:', e.reason);
+        });
+    </script>
 
     <!-- Carga el script de inicialización y lógica -->
     <script type="module" src="renderer.js"></script>
