@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 :root {
-    --neon-green: #39ff14;
-    --neon-blue: #00ffff;
-    --neon-pink: #ff00ff;
-    --bg-dark: #ffffff;
-    --border-color: rgba(57, 255, 20, 0.4);
+    --neon-green: #313647;
+    --neon-blue: #435663;
+    --neon-pink: #a3b087;
+    --bg-dark: #ede7df;
+    --border-color: rgba(139, 186, 45, 0.4);
 }
 
 body {
