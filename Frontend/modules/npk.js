@@ -16,3 +16,10 @@ export function initNPKChart() {
         }
     });
 }
+
+export function updateNPKChart(n, p, k) {
+    if (!chart) return;
+
+    chart.data.datasets[0].data = [n, p, k];
+    chart.update();
+}

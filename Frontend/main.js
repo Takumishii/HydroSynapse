@@ -30,7 +30,7 @@ function createWindow() {
 
     win.loadFile(indexPath);
     // temporal para debugging
-    win.webContents.openDevTools({ mode: 'right' });
+    //win.webContents.openDevTools({ mode: 'right' });
 
 
 

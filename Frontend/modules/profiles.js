@@ -41,9 +41,10 @@ export async function saveNutrientProfile() {
     const payload = {
         nombre,
         N, P, K,
-        EC,
-        pH
+        Ca: 150,  // puedes leerlo del formulario si vas a usar inputs
+        Mg: 50
     };
+
 
     try {
         const res = await fetch("http://localhost:8000/api/profiles/save", {

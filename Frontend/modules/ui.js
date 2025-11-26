@@ -48,3 +48,4 @@ export function toggleModule(id, hideOnly = false) {
         el.style.display = el.style.display === "none" ? "block" : "none";
     }
 }
+

@@ -14,10 +14,12 @@ import { setupCalculatorHandlers, calcularDosis, enviarAProcesador } from "./mod
 import { setupResultsModule } from "./modules/results.js";
 import { setupAnalyzer, agregarSal, analizarAgua } from "./modules/analyzer.js";
 import { loadInventory } from "./modules/inventory.js";
-import { initNPKChart } from "./modules/npk.js";
+import { initNPKChart, updateNPKChart } from "./modules/npk.js";
 import { setupDiagnosis, runDiagnosis } from "./modules/diagnosis.js";
 import { loadHistory } from "./modules/history.js";
-import { init3DSimulation } from "./modules/simulator3d.js";
+import { initConsole } from "./modules/console.js";
+
+import { init3DSimulation, startDosingAnimation } from "./modules/simulator3d.js";
 
 console.log("🟨 EXPONIENDO FUNCIONES GLOBALES");
 window.toggleModule = toggleModule;
@@ -41,6 +43,11 @@ initNPKChart();
 setupDiagnosis();
 loadHistory();
 init3DSimulation();
+
+console.log("🟧 Inicializando consola…");
+initConsole();
+console.log("🟩 Consola lista ✔");
+
 
 console.log("🟩 SISTEMA LISTO ✔");
 

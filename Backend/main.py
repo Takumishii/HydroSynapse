@@ -86,7 +86,47 @@ def get_profiles_endpoint():
         return jsonify({"success": True, "profiles": profiles})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-        
+
+@app.route('/api/profiles/save', methods=['POST'])
+def save_profile_endpoint():
+    data = request.json
+
+    required = ["nombre", "N", "P", "K", "Ca", "Mg"]
+    for r in required:
+        if r not in data:
+            return jsonify({"success": False, "message": f"Falta campo: {r}"}), 400
+
+    try:
+        conn = db_manager._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO profiles (nombre, N, P, K, Ca, Mg)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(nombre) DO UPDATE SET
+                N = excluded.N,
+                P = excluded.P,
+                K = excluded.K,
+                Ca = excluded.Ca,
+                Mg = excluded.Mg;
+        """, (
+            data["nombre"],
+            data["N"],
+            data["P"],
+            data["K"],
+            data["Ca"],
+            data["Mg"]
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 @app.route('/api/control/dosificar', methods=['POST'])
 def dosificar_endpoint():
     data = request.json

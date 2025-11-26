@@ -4,7 +4,7 @@
     --neon-green: #39ff14;
     --neon-blue: #00ffff;
     --neon-pink: #ff00ff;
-    --bg-dark: #050c18;
+    --bg-dark: #ffffff;
     --border-color: rgba(57, 255, 20, 0.4);
 }
 
@@ -46,7 +46,7 @@ body {
 /* Header ventana */
 .window-header {
     cursor: move;
-    background-color: rgba(0, 255, 255, 0.2);
+    background-color: rgba(0, 255, 195, 0.2);
     color: white;
     padding: 4px;
     display: flex;
