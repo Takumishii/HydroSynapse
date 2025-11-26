@@ -205,6 +205,61 @@
             <div class="p-1 border-b border-neon-pink/50 bg-black/50">CONSOLA DE REGISTROS</div>
             <div id="consoleLog"></div>
         </div>
+
+                <!-- MÓDULO 9: PREPARACIÓN DE SOLUCIÓN 1 MOLAR -->
+        <div id="module-molar" class="module-window w-80 h-auto" style="top: 100px; left: 500px; display: none;">
+            <div class="window-header">
+                <span>[ SOLUCIÓN 1 MOLAR ]</span>
+                <span class="close-btn" onclick="toggleModule('module-molar', true)">[X]</span>
+            </div>
+            <div class="p-3 space-y-3">
+                <h4 class="text-neon-pink border-b border-neon-pink/50 pb-1">Preparar Solución Molar</h4>
+
+                <label>Elemento / Sal:</label>
+                <select id="molarCompound" class="w-full">
+                    <option value="KNO3">Nitrato de Potasio (KNO₃)</option>
+                    <option value="CaNO3">Nitrato de Calcio [Ca(NO₃)₂]</option>
+                    <option value="NH4NO3">Nitrato de Amonio</option>
+                    <option value="KH2PO4">Fosfato Monopotásico</option>
+                    <option value="MgSO4">Sulfato de Magnesio</option>
+                    <option value="H3BO3">Ácido Bórico</option>
+                </select>
+
+                <label>Volumen de solución (L):</label>
+                <input type="number" id="molarVolume" class="w-full" value="1">
+
+                <button onclick="calcularMolar()" class="w-full p-2 bg-neon-blue text-black font-bold">
+                    CALCULAR MASA 1M
+                </button>
+
+                <div id="molarResult" class="border border-neon-green/50 p-2 text-sm min-h-[40px]"></div>
+            </div>
+        </div>
+
+
+                <!-- MÓDULO 10: BALANCEO ESTEQUIOMÉTRICO -->
+        <div id="module-equation" class="module-window w-[400px] h-auto" style="top: 150px; left: 850px; display: none;">
+            <div class="window-header">
+                <span>[ BALANCEO QUÍMICO ]</span>
+                <span class="close-btn" onclick="toggleModule('module-equation', true)">[X]</span>
+            </div>
+
+            <div class="p-3 space-y-3">
+                <label>Reactivos (ej: NH3 + O2):</label>
+                <input id="eqReactants" class="w-full" placeholder="NH3, O2">
+
+                <label>Productos (ej: NO + H2O):</label>
+                <input id="eqProducts" class="w-full" placeholder="NO, H2O">
+
+                <button onclick="balanceEquation()" class="w-full p-2 bg-neon-green text-black font-bold">
+                    BALANCEAR
+                </button>
+
+                <div id="eqResult" class="border border-neon-pink/50 p-2 text-sm min-h-[40px]"></div>
+            </div>
+        </div>
+
+
         
         <!-- BARRA DE ESTADO INFERIOR -->
         <div id="statusBar" class="text-sm text-neon-green z-200">

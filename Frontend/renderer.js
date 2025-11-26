@@ -15,9 +15,11 @@ import { setupResultsModule } from "./modules/results.js";
 import { setupAnalyzer, agregarSal, analizarAgua } from "./modules/analyzer.js";
 import { loadInventory } from "./modules/inventory.js";
 import { initNPKChart, updateNPKChart } from "./modules/npk.js";
-import { setupDiagnosis, runDiagnosis } from "./modules/diagnosis.js";
+import { setupDiagnosis } from "./modules/diagnosis.js";
 import { loadHistory } from "./modules/history.js";
 import { initConsole } from "./modules/console.js";
+import { calcularMolar } from "./modules/molar.js";
+import { balanceEquation } from "./modules/stoich.js";
 
 import { init3DSimulation, startDosingAnimation } from "./modules/simulator3d.js";
 
@@ -28,7 +30,8 @@ window.enviarAProcesador = enviarAProcesador;
 window.agregarSal = agregarSal;
 window.analizarAgua = analizarAgua;
 window.saveNutrientProfile = saveNutrientProfile;
-window.runDiagnosis = runDiagnosis;
+window.calcularMolar = calcularMolar;
+window.balanceEquation = balanceEquation;
 
 // --- ESTA PARTE FALTABA 🔥🔥🔥 ---
 console.log("🟧 INICIALIZANDO SISTEMA...");
